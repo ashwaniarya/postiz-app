@@ -326,9 +326,13 @@ export class StripeService extends PaymentProviderAbstract {
     };
 
     // checkValidCard used to run on every update and return false for incomplete,
-    // so the handler never wrote billing state. Keep that short-circuit now that
-    // the card check only runs on the transitions below.
-    if (event.data.object.status === 'incomplete') {
+    // so the handler never wrote billing state. incomplete_expired never reaches
+    // a deleted event, so it must return here too or a plan is saved and never
+    // revoked. Keep that short-circuit now that the card check only runs on the
+    // transitions below.
+    if (
+      ['incomplete', 'incomplete_expired'].includes(event.data.object.status)
+    ) {
       return { ok: false };
     }
 
