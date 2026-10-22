@@ -325,6 +325,13 @@ export class StripeService extends PaymentProviderAbstract {
       uniqueId: string;
     };
 
+    // checkValidCard used to run on every update and return false for incomplete,
+    // so the handler never wrote billing state. Keep that short-circuit now that
+    // the card check only runs on the transitions below.
+    if (event.data.object.status === 'incomplete') {
+      return { ok: false };
+    }
+
     // Only run checkValidCard if the payment method changed or if transitioning
     // from incomplete to trialing (initial trial activation), to avoid re-validating
     // (and potentially canceling) a valid subscription on routine updates.
